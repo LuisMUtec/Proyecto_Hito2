@@ -49,9 +49,7 @@ ALTER TABLE Medico ADD CONSTRAINT Medico_FK2 FOREIGN KEY (id_especialidad) REFER
 
 /* Tabla Cabina */
 CREATE TABLE Cabina (
-                        id_cabina INT,
-                        numero VARCHAR(10),
-                        ubicacion VARCHAR(100)
+                        id_cabina INT
 );
 
 ALTER TABLE Cabina ADD CONSTRAINT Cabina_PK PRIMARY KEY (id_cabina);
@@ -79,6 +77,7 @@ CREATE TABLE Turno (
 ALTER TABLE Turno ADD CONSTRAINT Turno_PK PRIMARY KEY (fecha, turno);
 ALTER TABLE Turno ADD CONSTRAINT Turno_FK1 FOREIGN KEY (id_personal) REFERENCES Personal(id_personal);
 ALTER TABLE Turno ADD CONSTRAINT Turno_FK2 FOREIGN KEY (id_cabina) REFERENCES Cabina(id_cabina);
+ALTER TABLE Turno ADD CONSTRAINT turno_valores_validos CHECK (turno IN ('morning', 'afternoon', 'evening'));
 
 
 /* Tabla Cita */
