@@ -11,6 +11,9 @@ CREATE TABLE Persona (
 );
 
 ALTER TABLE Persona ADD CONSTRAINT Persona_PK PRIMARY KEY (id_persona);
+ALTER TABLE Persona ADD CONSTRAINT Persona_UQ_dni UNIQUE (dni);
+ALTER TABLE Persona ADD CONSTRAINT Persona_UQ_correo UNIQUE (correo);
+ALTER TABLE Persona ADD CONSTRAINT Persona_CK_sexo CHECK (sexo IN ('M', 'F'));
 
 
 /* Tabla Paciente */
@@ -23,6 +26,7 @@ CREATE TABLE Paciente (
 
 ALTER TABLE Paciente ADD CONSTRAINT Paciente_PK PRIMARY KEY (id_paciente);
 ALTER TABLE Paciente ADD CONSTRAINT Paciente_FK FOREIGN KEY (id_persona) REFERENCES Persona(id_persona);
+ALTER TABLE Paciente ADD CONSTRAINT Paciente_CK_seguro CHECK (tipo_seguro IN ('SIS', 'Essalud', 'Privado', 'Ninguno'));
 
 
 /* Tabla Especialidad */
@@ -33,6 +37,7 @@ CREATE TABLE Especialidad (
 );
 
 ALTER TABLE Especialidad ADD CONSTRAINT Especialidad_PK PRIMARY KEY (id_especialidad);
+ALTER TABLE Especialidad ADD CONSTRAINT Especialidad_UQ_nombre UNIQUE (nombre);
 
 
 /* Tabla Médico */
@@ -49,10 +54,13 @@ ALTER TABLE Medico ADD CONSTRAINT Medico_FK2 FOREIGN KEY (id_especialidad) REFER
 
 /* Tabla Cabina */
 CREATE TABLE Cabina (
-                        id_cabina INT
+                        id_cabina INT,
+                        numero VARCHAR(10),
+                        ubicacion VARCHAR(100)
 );
 
 ALTER TABLE Cabina ADD CONSTRAINT Cabina_PK PRIMARY KEY (id_cabina);
+ALTER TABLE Cabina ADD CONSTRAINT Cabina_UQ_numero UNIQUE (numero);
 
 
 /* Tabla Personal */
@@ -71,13 +79,13 @@ CREATE TABLE Turno (
                        id_personal INT,
                        id_cabina INT,
                        fecha DATE,
-                        turno VARCHAR(20)
+                       turno VARCHAR(20)
 );
 
 ALTER TABLE Turno ADD CONSTRAINT Turno_PK PRIMARY KEY (fecha, turno);
 ALTER TABLE Turno ADD CONSTRAINT Turno_FK1 FOREIGN KEY (id_personal) REFERENCES Personal(id_personal);
 ALTER TABLE Turno ADD CONSTRAINT Turno_FK2 FOREIGN KEY (id_cabina) REFERENCES Cabina(id_cabina);
-ALTER TABLE Turno ADD CONSTRAINT turno_valores_validos CHECK (turno IN ('morning', 'afternoon', 'evening'));
+ALTER TABLE Turno ADD CONSTRAINT Turno_CK_turno CHECK (turno IN ('mañana', 'tarde', 'noche'));
 
 
 /* Tabla Cita */
@@ -95,6 +103,4 @@ ALTER TABLE Cita ADD CONSTRAINT Cita_PK PRIMARY KEY (id_cita);
 ALTER TABLE Cita ADD CONSTRAINT Cita_FK1 FOREIGN KEY (id_paciente) REFERENCES Paciente(id_paciente);
 ALTER TABLE Cita ADD CONSTRAINT Cita_FK2 FOREIGN KEY (id_medico) REFERENCES Medico(id_medico);
 ALTER TABLE Cita ADD CONSTRAINT Cita_FK3 FOREIGN KEY (id_personal_registro) REFERENCES Personal(id_personal);
-
-
-select*from cita
+ALTER TABLE Cita ADD CONSTRAINT Cita_CK_estado CHECK (estado IN ('pendiente', 'confirmada', 'cancelada', 'atendida'));
