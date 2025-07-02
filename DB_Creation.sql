@@ -1,106 +1,146 @@
-/* Tabla Persona */
-CREATE TABLE Persona (
-                         id_persona INT,
-                         nombre VARCHAR(50),
-                         apellido VARCHAR(50),
-                         dni VARCHAR(8),
-                         fecha_nacimiento DATE,
-                         sexo CHAR(1),
-                         correo VARCHAR(100),
-                         telefono VARCHAR(15)
-);
-
-ALTER TABLE Persona ADD CONSTRAINT Persona_PK PRIMARY KEY (id_persona);
-ALTER TABLE Persona ADD CONSTRAINT Persona_UQ_dni UNIQUE (dni);
-ALTER TABLE Persona ADD CONSTRAINT Persona_UQ_correo UNIQUE (correo);
-ALTER TABLE Persona ADD CONSTRAINT Persona_CK_sexo CHECK (sexo IN ('M', 'F'));
-
-
-/* Tabla Paciente */
+-- ========================================
+-- Tabla PACIENTE
+-- ========================================
 CREATE TABLE Paciente (
-                          id_paciente INT,
-                          id_persona INT,
+                          dni CHAR(8) NOT NULL,
+                          nombre VARCHAR(50) NOT NULL,
+                          apellido VARCHAR(50) NOT NULL,
+                          fecha_nacimiento DATE,
+                          sexo CHAR(1),
+                          correo VARCHAR(100),
+                          telefono VARCHAR(15),
                           tipo_seguro VARCHAR(10),
-                          fecha_registro DATE
+                          fecha_registro DATE DEFAULT CURRENT_DATE
 );
 
-ALTER TABLE Paciente ADD CONSTRAINT Paciente_PK PRIMARY KEY (id_paciente);
-ALTER TABLE Paciente ADD CONSTRAINT Paciente_FK FOREIGN KEY (id_persona) REFERENCES Persona(id_persona);
-ALTER TABLE Paciente ADD CONSTRAINT Paciente_CK_seguro CHECK (tipo_seguro IN ('SIS', 'Essalud', 'Privado', 'Ninguno'));
+ALTER TABLE Paciente ADD CONSTRAINT paciente_pk PRIMARY KEY (dni);
+ALTER TABLE Paciente ADD CONSTRAINT paciente_uq_correo UNIQUE (correo);
+ALTER TABLE Paciente ADD CONSTRAINT paciente_ck_sexo CHECK (sexo IN ('M', 'F'));
+ALTER TABLE Paciente ADD CONSTRAINT paciente_ck_seguro CHECK (tipo_seguro IN ('SIS', 'Essalud', 'Privado', 'Ninguno'));
 
 
-/* Tabla Especialidad */
+-- ========================================
+-- Tabla ESPECIALIDAD
+-- ========================================
 CREATE TABLE Especialidad (
-                              id_especialidad INT,
-                              nombre VARCHAR(50),
+                              nombre VARCHAR(50) NOT NULL,
                               descripcion TEXT
 );
 
-ALTER TABLE Especialidad ADD CONSTRAINT Especialidad_PK PRIMARY KEY (id_especialidad);
-ALTER TABLE Especialidad ADD CONSTRAINT Especialidad_UQ_nombre UNIQUE (nombre);
+ALTER TABLE Especialidad ADD CONSTRAINT especialidad_pk PRIMARY KEY (nombre);
+ALTER TABLE Especialidad ADD CONSTRAINT especialidad_uq_nombre UNIQUE (nombre);
 
 
-/* Tabla Médico */
+-- ========================================
+-- Tabla MEDICO
+-- ========================================
 CREATE TABLE Medico (
-                        id_medico INT,
-                        id_persona INT,
-                        id_especialidad INT
+                        dni CHAR(8) NOT NULL,
+                        nombre VARCHAR(50) NOT NULL,
+                        apellido VARCHAR(50) NOT NULL,
+                        fecha_nacimiento DATE,
+                        sexo CHAR(1),
+                        correo VARCHAR(100),
+                        telefono VARCHAR(15)
 );
 
-ALTER TABLE Medico ADD CONSTRAINT Medico_PK PRIMARY KEY (id_medico);
-ALTER TABLE Medico ADD CONSTRAINT Medico_FK1 FOREIGN KEY (id_persona) REFERENCES Persona(id_persona);
-ALTER TABLE Medico ADD CONSTRAINT Medico_FK2 FOREIGN KEY (id_especialidad) REFERENCES Especialidad(id_especialidad);
+ALTER TABLE Medico ADD CONSTRAINT medico_pk PRIMARY KEY (dni);
+ALTER TABLE Medico ADD CONSTRAINT medico_uq_correo UNIQUE (correo);
+ALTER TABLE Medico ADD CONSTRAINT medico_ck_sexo CHECK (sexo IN ('M', 'F'));
 
 
-/* Tabla Cabina */
+-- ========================================
+-- Tabla MEDICO_ESPECIALIDAD (N:M)
+-- ========================================
+CREATE TABLE Medico_Especialidad (
+                                     dni_medico CHAR(8) NOT NULL,
+                                     nombre_especialidad VARCHAR(50) NOT NULL
+);
+
+ALTER TABLE Medico_Especialidad ADD CONSTRAINT medico_especialidad_pk PRIMARY KEY (dni_medico, nombre_especialidad);
+ALTER TABLE Medico_Especialidad ADD CONSTRAINT medico_especialidad_fk_medico FOREIGN KEY (dni_medico) REFERENCES Medico(dni);
+ALTER TABLE Medico_Especialidad ADD CONSTRAINT medico_especialidad_fk_especialidad FOREIGN KEY (nombre_especialidad) REFERENCES Especialidad(nombre);
+
+
+-- ========================================
+-- Tabla CABINA
+-- ========================================
 CREATE TABLE Cabina (
-                        id_cabina INT,
-                        numero VARCHAR(10),
-                        ubicacion VARCHAR(100)
+                        numero VARCHAR(30) NOT NULL,
+                        ubicacion VARCHAR(100) NOT NULL
 );
 
-ALTER TABLE Cabina ADD CONSTRAINT Cabina_PK PRIMARY KEY (id_cabina);
-ALTER TABLE Cabina ADD CONSTRAINT Cabina_UQ_numero UNIQUE (numero);
+ALTER TABLE Cabina ADD CONSTRAINT cabina_pk PRIMARY KEY (numero);
+ALTER TABLE Cabina ADD CONSTRAINT cabina_uq UNIQUE (numero, ubicacion);
 
 
-/* Tabla Personal */
+-- ========================================
+-- Tabla CONSULTORIO
+-- ========================================
+CREATE TABLE Consultorio (
+                             numero VARCHAR(30) NOT NULL,
+                             ubicacion VARCHAR(100) NOT NULL
+);
+
+ALTER TABLE Consultorio ADD CONSTRAINT consultorio_pk PRIMARY KEY (numero);
+ALTER TABLE Consultorio ADD CONSTRAINT consultorio_uq UNIQUE (numero, ubicacion);
+
+
+-- ========================================
+-- Tabla PERSONAL
+-- ========================================
 CREATE TABLE Personal (
-                          id_personal INT,
-                          id_persona INT,
-                          rol VARCHAR(20)
+                          dni CHAR(8) NOT NULL,
+                          nombre VARCHAR(50) NOT NULL,
+                          apellido VARCHAR(50) NOT NULL,
+                          fecha_nacimiento DATE,
+                          sexo CHAR(1),
+                          correo VARCHAR(100),
+                          telefono VARCHAR(15)
 );
 
-ALTER TABLE Personal ADD CONSTRAINT Personal_PK PRIMARY KEY (id_personal);
-ALTER TABLE Personal ADD CONSTRAINT Personal_FK FOREIGN KEY (id_persona) REFERENCES Persona(id_persona);
+ALTER TABLE Personal ADD CONSTRAINT personal_pk PRIMARY KEY (dni);
+ALTER TABLE Personal ADD CONSTRAINT personal_uq_correo UNIQUE (correo);
+ALTER TABLE Personal ADD CONSTRAINT personal_ck_sexo CHECK (sexo IN ('M', 'F'));
 
 
-/* Tabla Turno */
+-- ========================================
+-- Tabla TURNO (id_turno manual y numero_cabina)
+-- ========================================
 CREATE TABLE Turno (
-                       id_personal INT,
-                       id_cabina INT,
-                       fecha DATE,
-                       turno VARCHAR(20)
+                       dni_personal CHAR(8) NOT NULL,
+                       numero_cabina VARCHAR(30) NOT NULL,
+                       fecha DATE NOT NULL,
+                       horario VARCHAR(20) NOT NULL
 );
 
-ALTER TABLE Turno ADD CONSTRAINT Turno_PK PRIMARY KEY (fecha, turno);
-ALTER TABLE Turno ADD CONSTRAINT Turno_FK1 FOREIGN KEY (id_personal) REFERENCES Personal(id_personal);
-ALTER TABLE Turno ADD CONSTRAINT Turno_FK2 FOREIGN KEY (id_cabina) REFERENCES Cabina(id_cabina);
-ALTER TABLE Turno ADD CONSTRAINT Turno_CK_turno CHECK (turno IN ('mañana', 'tarde', 'noche'));
+ALTER TABLE Turno ADD CONSTRAINT turno_pk PRIMARY KEY (horario, fecha, numero_cabina);
+ALTER TABLE Turno ADD CONSTRAINT turno_fk_personal FOREIGN KEY (dni_personal) REFERENCES Personal(dni);
+ALTER TABLE Turno ADD CONSTRAINT turno_fk_cabina FOREIGN KEY (numero_cabina) REFERENCES Cabina(numero);
+ALTER TABLE Turno ADD CONSTRAINT turno_ck_turno CHECK (horario IN ('mañana', 'tarde', 'noche'));
 
 
-/* Tabla Cita */
+
+-- ========================================
+-- Tabla CITA (id_cita SERIAL y numero_consultorio)
+-- ========================================
 CREATE TABLE Cita (
-                      id_cita INT,
-                      id_paciente INT,
-                      id_medico INT,
-                      fecha DATE,
-                      hora TIME,
+                      id_cita SERIAL,
+                      dni_paciente CHAR(8) NOT NULL,
+                      dni_medico CHAR(8) NOT NULL,
+                      fecha DATE NOT NULL,
+                      hora TIME NOT NULL,
                       estado VARCHAR(20),
-                      id_personal_registro INT
+                      dni_personal CHAR(8) NOT NULL,
+                      numero_consultorio VARCHAR(30) NOT NULL
 );
 
-ALTER TABLE Cita ADD CONSTRAINT Cita_PK PRIMARY KEY (id_cita);
-ALTER TABLE Cita ADD CONSTRAINT Cita_FK1 FOREIGN KEY (id_paciente) REFERENCES Paciente(id_paciente);
-ALTER TABLE Cita ADD CONSTRAINT Cita_FK2 FOREIGN KEY (id_medico) REFERENCES Medico(id_medico);
-ALTER TABLE Cita ADD CONSTRAINT Cita_FK3 FOREIGN KEY (id_personal_registro) REFERENCES Personal(id_personal);
-ALTER TABLE Cita ADD CONSTRAINT Cita_CK_estado CHECK (estado IN ('pendiente', 'confirmada', 'cancelada', 'atendida'));
+ALTER TABLE Cita ADD CONSTRAINT cita_pk PRIMARY KEY (id_cita);
+ALTER TABLE Cita ADD CONSTRAINT cita_fk_paciente FOREIGN KEY (dni_paciente) REFERENCES Paciente(dni);
+ALTER TABLE Cita ADD CONSTRAINT cita_fk_medico FOREIGN KEY (dni_medico) REFERENCES Medico(dni);
+ALTER TABLE Cita ADD CONSTRAINT cita_fk_personal FOREIGN KEY (dni_personal) REFERENCES Personal(dni);
+ALTER TABLE Cita ADD CONSTRAINT cita_fk_consultorio FOREIGN KEY (numero_consultorio) REFERENCES Consultorio(numero);
+ALTER TABLE Cita ADD CONSTRAINT cita_ck_estado CHECK (estado IN ('pendiente', 'confirmada', 'cancelada', 'atendida'));
+ALTER TABLE Cita ADD CONSTRAINT cita_uq UNIQUE (dni_medico, fecha, hora);
+
+
