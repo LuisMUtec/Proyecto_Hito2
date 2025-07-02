@@ -17,7 +17,7 @@ FROM Medico m
 WHERE c.fecha >= CURRENT_DATE - INTERVAL '6 months'
 GROUP BY e.nombre, m.dni, m.nombre, m.apellido
 HAVING COUNT(c.id_cita) > 0
-ORDER BY e.nombre, total_citas DESC;
+ORDER BY total_citas DESC;
 
 --2. **Ocupación de consultorios**: Analiza el uso de espacios físicos y recursos
 
