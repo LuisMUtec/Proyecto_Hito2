@@ -1,0 +1,6 @@
+Aggregate  (cost=2325.00..2325.01 rows=1 width=8) (actual time=8.916..8.918 rows=1 loops=1)
+  Buffers: shared hit=1075
+  ->  Seq Scan on especialidad  (cost=0.00..2075.00 rows=100000 width=0) (actual time=0.008..4.847 rows=100000 loops=1)
+        Buffers: shared hit=1075
+Planning Time: 0.063 ms
+Execution Time: 8.942 ms

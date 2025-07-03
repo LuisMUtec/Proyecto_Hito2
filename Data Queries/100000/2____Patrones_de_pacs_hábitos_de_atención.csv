@@ -1,0 +1,48 @@
+Sort  (cost=23587.29..23642.64 rows=22140 width=158) (actual time=442.055..442.163 rows=2932 loops=1)
+"  Output: p.dni, ((((p.nombre)::text || ' '::text) || (p.apellido)::text)), p.tipo_seguro, (count(c.id_cita)), (count(DISTINCT c.dni_medico)), (count(DISTINCT me.nombre_especialidad)), (min(c.fecha)), (max(c.fecha)), (avg((EXTRACT(epoch FROM c.hora) / '3600'::numeric))), (string_agg(DISTINCT (me.nombre_especialidad)::text, ', '::text)), p.nombre, p.apellido"
+"  Sort Key: (count(c.id_cita)) DESC, (count(DISTINCT me.nombre_especialidad)) DESC"
+  Sort Method: quicksort  Memory: 663kB
+"  Buffers: shared hit=3284, temp read=713 written=715"
+  ->  GroupAggregate  (cost=18889.76..21989.41 rows=22140 width=158) (actual time=241.787..440.602 rows=2932 loops=1)
+"        Output: p.dni, (((p.nombre)::text || ' '::text) || (p.apellido)::text), p.tipo_seguro, count(c.id_cita), count(DISTINCT c.dni_medico), count(DISTINCT me.nombre_especialidad), min(c.fecha), max(c.fecha), avg((EXTRACT(epoch FROM c.hora) / '3600'::numeric)), string_agg(DISTINCT (me.nombre_especialidad)::text, ', '::text), p.nombre, p.apellido"
+        Group Key: p.dni
+        Filter: (count(c.id_cita) >= 3)
+        Rows Removed by Filter: 45588
+"        Buffers: shared hit=3284, temp read=713 written=715"
+        ->  Sort  (cost=18889.76..19055.81 rows=66421 width=73) (actual time=241.686..263.663 rows=66201 loops=1)
+"              Output: p.dni, p.nombre, p.apellido, p.tipo_seguro, c.id_cita, c.dni_medico, me.nombre_especialidad, c.fecha, c.hora"
+              Sort Key: p.dni
+              Sort Method: external merge  Disk: 5704kB
+"              Buffers: shared hit=3281, temp read=713 written=715"
+              ->  Hash Join  (cost=6543.00..10615.65 rows=66421 width=73) (actual time=66.381..134.855 rows=66201 loops=1)
+"                    Output: p.dni, p.nombre, p.apellido, p.tipo_seguro, c.id_cita, c.dni_medico, me.nombre_especialidad, c.fecha, c.hora"
+                    Hash Cond: (c.dni_medico = me.dni_medico)
+                    Buffers: shared hit=3278
+                    ->  Hash Join  (cost=3557.00..6716.37 rows=66421 width=55) (actual time=40.691..82.177 rows=66201 loops=1)
+"                          Output: p.dni, p.nombre, p.apellido, p.tipo_seguro, c.id_cita, c.dni_medico, c.fecha, c.hora"
+                          Inner Unique: true
+                          Hash Cond: (c.dni_paciente = p.dni)
+                          Buffers: shared hit=2542
+                          ->  Seq Scan on public.cita c  (cost=0.00..2985.00 rows=66421 width=34) (actual time=0.011..15.670 rows=66201 loops=1)
+"                                Output: c.id_cita, c.dni_paciente, c.dni_medico, c.fecha, c.hora, c.estado, c.dni_personal, c.numero_consultorio"
+                                Filter: (c.fecha >= (CURRENT_DATE - '1 year'::interval))
+                                Rows Removed by Filter: 33799
+                                Buffers: shared hit=1235
+                          ->  Hash  (cost=2307.00..2307.00 rows=100000 width=30) (actual time=39.803..39.805 rows=100000 loops=1)
+"                                Output: p.dni, p.nombre, p.apellido, p.tipo_seguro"
+                                Buckets: 131072  Batches: 1  Memory Usage: 7090kB
+                                Buffers: shared hit=1307
+                                ->  Seq Scan on public.paciente p  (cost=0.00..2307.00 rows=100000 width=30) (actual time=0.014..17.753 rows=100000 loops=1)
+"                                      Output: p.dni, p.nombre, p.apellido, p.tipo_seguro"
+                                      Buffers: shared hit=1307
+                    ->  Hash  (cost=1736.00..1736.00 rows=100000 width=27) (actual time=25.388..25.388 rows=100000 loops=1)
+"                          Output: me.nombre_especialidad, me.dni_medico"
+                          Buckets: 131072  Batches: 1  Memory Usage: 6873kB
+                          Buffers: shared hit=736
+                          ->  Seq Scan on public.medico_especialidad me  (cost=0.00..1736.00 rows=100000 width=27) (actual time=0.005..8.673 rows=100000 loops=1)
+"                                Output: me.nombre_especialidad, me.dni_medico"
+                                Buffers: shared hit=736
+Planning:
+  Buffers: shared hit=105 read=2
+Planning Time: 1.301 ms
+Execution Time: 443.841 ms

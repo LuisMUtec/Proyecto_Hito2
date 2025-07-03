@@ -1,0 +1,8 @@
+Aggregate  (cost=2557.00..2557.01 rows=1 width=8) (actual time=9.602..9.603 rows=1 loops=1)
+  Buffers: shared hit=1307
+  ->  Seq Scan on paciente  (cost=0.00..2307.00 rows=100000 width=0) (actual time=0.005..5.318 rows=100000 loops=1)
+        Buffers: shared hit=1307
+Planning:
+  Buffers: shared hit=3
+Planning Time: 0.086 ms
+Execution Time: 9.625 ms

@@ -1,0 +1,99 @@
+Sort  (cost=324.07..324.44 rows=148 width=120) (actual time=8.633..8.643 rows=76 loops=1)
+"  Output: e_1.nombre, (count(DISTINCT m.dni)), (count(DISTINCT CASE WHEN (c.fecha >= (CURRENT_DATE - '1 mon'::interval)) THEN m.dni ELSE NULL::bpchar END)), (count(c_1.id_cita)), (count(CASE WHEN ((c_1.estado)::text = 'cancelada'::text) THEN 1 ELSE NULL::integer END)), (count(CASE WHEN (c_1.fecha > CURRENT_DATE) THEN 1 ELSE NULL::integer END)), (round((((count(c_1.id_cita)))::numeric / (NULLIF((count(DISTINCT CASE WHEN (c.fecha >= (CURRENT_DATE - '1 mon'::interval)) THEN m.dni ELSE NULL::bpchar END)), 0))::numeric), 2)), (round(((((count(CASE WHEN ((c_1.estado)::text = 'cancelada'::text) THEN 1 ELSE NULL::integer END)))::numeric * 100.0) / ((count(c_1.id_cita)))::numeric), 2))"
+"  Sort Key: (round((((count(c_1.id_cita)))::numeric / (NULLIF((count(DISTINCT CASE WHEN (c.fecha >= (CURRENT_DATE - '1 mon'::interval)) THEN m.dni ELSE NULL::bpchar END)), 0))::numeric), 2)) DESC"
+  Sort Method: quicksort  Memory: 33kB
+  Buffers: shared hit=76
+  ->  Hash Join  (cost=280.81..318.73 rows=148 width=120) (actual time=6.813..8.607 rows=76 loops=1)
+"        Output: e_1.nombre, (count(DISTINCT m.dni)), (count(DISTINCT CASE WHEN (c.fecha >= (CURRENT_DATE - '1 mon'::interval)) THEN m.dni ELSE NULL::bpchar END)), (count(c_1.id_cita)), (count(CASE WHEN ((c_1.estado)::text = 'cancelada'::text) THEN 1 ELSE NULL::integer END)), (count(CASE WHEN (c_1.fecha > CURRENT_DATE) THEN 1 ELSE NULL::integer END)), round((((count(c_1.id_cita)))::numeric / (NULLIF((count(DISTINCT CASE WHEN (c.fecha >= (CURRENT_DATE - '1 mon'::interval)) THEN m.dni ELSE NULL::bpchar END)), 0))::numeric), 2), round(((((count(CASE WHEN ((c_1.estado)::text = 'cancelada'::text) THEN 1 ELSE NULL::integer END)))::numeric * 100.0) / ((count(c_1.id_cita)))::numeric), 2)"
+        Inner Unique: true
+        Hash Cond: ((e.nombre)::text = (e_1.nombre)::text)
+        Buffers: shared hit=76
+        ->  GroupAggregate  (cost=190.35..220.35 rows=333 width=32) (actual time=6.188..7.877 rows=632 loops=1)
+"              Output: e.nombre, count(DISTINCT m.dni), count(DISTINCT CASE WHEN (c.fecha >= (CURRENT_DATE - '1 mon'::interval)) THEN m.dni ELSE NULL::bpchar END)"
+              Group Key: e.nombre
+              Filter: (count(DISTINCT m.dni) > 0)
+              Rows Removed by Filter: 368
+              Buffers: shared hit=44
+              ->  Sort  (cost=190.35..192.85 rows=1000 width=29) (actual time=6.155..6.230 rows=1750 loops=1)
+"                    Output: e.nombre, m.dni, c.fecha"
+                    Sort Key: e.nombre
+                    Sort Method: quicksort  Memory: 168kB
+                    Buffers: shared hit=44
+                    ->  Hash Right Join  (cost=98.50..140.52 rows=1000 width=29) (actual time=0.823..1.845 rows=1750 loops=1)
+"                          Output: e.nombre, m.dni, c.fecha"
+                          Inner Unique: true
+                          Hash Cond: ((me.nombre_especialidad)::text = (e.nombre)::text)
+                          Buffers: shared hit=44
+                          ->  Hash Right Join  (cost=65.00..104.39 rows=1000 width=29) (actual time=0.585..1.294 rows=1382 loops=1)
+"                                Output: me.nombre_especialidad, m.dni, c.fecha"
+                                Hash Cond: (m.dni = me.dni_medico)
+                                Buffers: shared hit=33
+                                ->  Hash Right Join  (cost=34.50..60.14 rows=1000 width=13) (actual time=0.276..0.625 rows=1382 loops=1)
+"                                      Output: m.dni, c.fecha"
+                                      Inner Unique: true
+                                      Hash Cond: (c.dni_medico = m.dni)
+                                      Buffers: shared hit=25
+                                      ->  Seq Scan on public.cita c  (cost=0.00..23.00 rows=1000 width=13) (actual time=0.005..0.072 rows=1000 loops=1)
+"                                            Output: c.id_cita, c.dni_paciente, c.dni_medico, c.fecha, c.hora, c.estado, c.dni_personal, c.numero_consultorio"
+                                            Buffers: shared hit=13
+                                      ->  Hash  (cost=22.00..22.00 rows=1000 width=9) (actual time=0.265..0.266 rows=1000 loops=1)
+                                            Output: m.dni
+                                            Buckets: 1024  Batches: 1  Memory Usage: 49kB
+                                            Buffers: shared hit=12
+                                            ->  Seq Scan on public.medico m  (cost=0.00..22.00 rows=1000 width=9) (actual time=0.004..0.092 rows=1000 loops=1)
+                                                  Output: m.dni
+                                                  Buffers: shared hit=12
+                                ->  Hash  (cost=18.00..18.00 rows=1000 width=25) (actual time=0.305..0.305 rows=1000 loops=1)
+"                                      Output: me.nombre_especialidad, me.dni_medico"
+                                      Buckets: 1024  Batches: 1  Memory Usage: 65kB
+                                      Buffers: shared hit=8
+                                      ->  Seq Scan on public.medico_especialidad me  (cost=0.00..18.00 rows=1000 width=25) (actual time=0.004..0.098 rows=1000 loops=1)
+"                                            Output: me.nombre_especialidad, me.dni_medico"
+                                            Buffers: shared hit=8
+                          ->  Hash  (cost=21.00..21.00 rows=1000 width=16) (actual time=0.235..0.236 rows=1000 loops=1)
+                                Output: e.nombre
+                                Buckets: 1024  Batches: 1  Memory Usage: 56kB
+                                Buffers: shared hit=11
+                                ->  Seq Scan on public.especialidad e  (cost=0.00..21.00 rows=1000 width=16) (actual time=0.003..0.087 rows=1000 loops=1)
+                                      Output: e.nombre
+                                      Buffers: shared hit=11
+        ->  Hash  (cost=89.34..89.34 rows=89 width=40) (actual time=0.567..0.570 rows=76 loops=1)
+"              Output: e_1.nombre, (count(c_1.id_cita)), (count(CASE WHEN ((c_1.estado)::text = 'cancelada'::text) THEN 1 ELSE NULL::integer END)), (count(CASE WHEN (c_1.fecha > CURRENT_DATE) THEN 1 ELSE NULL::integer END))"
+              Buckets: 1024  Batches: 1  Memory Usage: 14kB
+              Buffers: shared hit=32
+              ->  HashAggregate  (cost=87.56..88.45 rows=89 width=40) (actual time=0.545..0.558 rows=76 loops=1)
+"                    Output: e_1.nombre, count(c_1.id_cita), count(CASE WHEN ((c_1.estado)::text = 'cancelada'::text) THEN 1 ELSE NULL::integer END), count(CASE WHEN (c_1.fecha > CURRENT_DATE) THEN 1 ELSE NULL::integer END)"
+                    Group Key: e_1.nombre
+                    Batches: 1  Memory Usage: 32kB
+                    Buffers: shared hit=32
+                    ->  Hash Join  (cost=60.36..86.00 rows=89 width=34) (actual time=0.364..0.520 rows=89 loops=1)
+"                          Output: e_1.nombre, c_1.id_cita, c_1.estado, c_1.fecha"
+                          Hash Cond: ((e_1.nombre)::text = (me_1.nombre_especialidad)::text)
+                          Buffers: shared hit=32
+                          ->  Seq Scan on public.especialidad e_1  (cost=0.00..21.00 rows=1000 width=16) (actual time=0.006..0.065 rows=1000 loops=1)
+"                                Output: e_1.nombre, e_1.descripcion"
+                                Buffers: shared hit=11
+                          ->  Hash  (cost=59.25..59.25 rows=89 width=34) (actual time=0.351..0.352 rows=89 loops=1)
+"                                Output: me_1.nombre_especialidad, c_1.id_cita, c_1.estado, c_1.fecha"
+                                Buckets: 1024  Batches: 1  Memory Usage: 15kB
+                                Buffers: shared hit=21
+                                ->  Hash Join  (cost=31.61..59.25 rows=89 width=34) (actual time=0.174..0.336 rows=89 loops=1)
+"                                      Output: me_1.nombre_especialidad, c_1.id_cita, c_1.estado, c_1.fecha"
+                                      Hash Cond: (me_1.dni_medico = c_1.dni_medico)
+                                      Buffers: shared hit=21
+                                      ->  Seq Scan on public.medico_especialidad me_1  (cost=0.00..18.00 rows=1000 width=25) (actual time=0.003..0.063 rows=1000 loops=1)
+"                                            Output: me_1.dni_medico, me_1.nombre_especialidad"
+                                            Buffers: shared hit=8
+                                      ->  Hash  (cost=30.50..30.50 rows=89 width=27) (actual time=0.166..0.166 rows=89 loops=1)
+"                                            Output: c_1.id_cita, c_1.estado, c_1.fecha, c_1.dni_medico"
+                                            Buckets: 1024  Batches: 1  Memory Usage: 14kB
+                                            Buffers: shared hit=13
+                                            ->  Seq Scan on public.cita c_1  (cost=0.00..30.50 rows=89 width=27) (actual time=0.007..0.134 rows=89 loops=1)
+"                                                  Output: c_1.id_cita, c_1.estado, c_1.fecha, c_1.dni_medico"
+                                                  Filter: (c_1.fecha >= (CURRENT_DATE - '2 mons'::interval))
+                                                  Rows Removed by Filter: 911
+                                                  Buffers: shared hit=13
+Planning:
+  Buffers: shared hit=54
+Planning Time: 1.254 ms
+Execution Time: 8.755 ms

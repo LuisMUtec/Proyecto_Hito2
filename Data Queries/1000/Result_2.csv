@@ -1,0 +1,48 @@
+Sort  (cost=178.87..179.42 rows=221 width=158) (actual time=3.704..3.707 rows=26 loops=1)
+"  Output: p.dni, ((((p.nombre)::text || ' '::text) || (p.apellido)::text)), p.tipo_seguro, (count(c.id_cita)), (count(DISTINCT c.dni_medico)), (count(DISTINCT me.nombre_especialidad)), (min(c.fecha)), (max(c.fecha)), (avg((EXTRACT(epoch FROM c.hora) / '3600'::numeric))), (string_agg(DISTINCT (me.nombre_especialidad)::text, ', '::text)), p.nombre, p.apellido"
+"  Sort Key: (count(c.id_cita)) DESC, (count(DISTINCT me.nombre_especialidad)) DESC"
+  Sort Method: quicksort  Memory: 29kB
+  Buffers: shared hit=41
+  ->  GroupAggregate  (cost=139.37..170.26 rows=221 width=158) (actual time=1.967..3.685 rows=26 loops=1)
+"        Output: p.dni, (((p.nombre)::text || ' '::text) || (p.apellido)::text), p.tipo_seguro, count(c.id_cita), count(DISTINCT c.dni_medico), count(DISTINCT me.nombre_especialidad), min(c.fecha), max(c.fecha), avg((EXTRACT(epoch FROM c.hora) / '3600'::numeric)), string_agg(DISTINCT (me.nombre_especialidad)::text, ', '::text), p.nombre, p.apellido"
+        Group Key: p.dni
+        Filter: (count(c.id_cita) >= 3)
+        Rows Removed by Filter: 465
+        Buffers: shared hit=41
+        ->  Sort  (cost=139.37..141.02 rows=662 width=71) (actual time=1.762..1.793 rows=660 loops=1)
+"              Output: p.dni, p.nombre, p.apellido, p.tipo_seguro, c.id_cita, c.dni_medico, me.nombre_especialidad, c.fecha, c.hora"
+              Sort Key: p.dni
+              Sort Method: quicksort  Memory: 101kB
+              Buffers: shared hit=38
+              ->  Hash Join  (cost=67.00..108.35 rows=662 width=71) (actual time=0.669..1.179 rows=660 loops=1)
+"                    Output: p.dni, p.nombre, p.apellido, p.tipo_seguro, c.id_cita, c.dni_medico, me.nombre_especialidad, c.fecha, c.hora"
+                    Hash Cond: (c.dni_medico = me.dni_medico)
+                    Buffers: shared hit=35
+                    ->  Hash Join  (cost=36.50..68.75 rows=662 width=55) (actual time=0.328..0.692 rows=660 loops=1)
+"                          Output: p.dni, p.nombre, p.apellido, p.tipo_seguro, c.id_cita, c.dni_medico, c.fecha, c.hora"
+                          Inner Unique: true
+                          Hash Cond: (c.dni_paciente = p.dni)
+                          Buffers: shared hit=27
+                          ->  Seq Scan on public.cita c  (cost=0.00..30.50 rows=662 width=34) (actual time=0.007..0.161 rows=660 loops=1)
+"                                Output: c.id_cita, c.dni_paciente, c.dni_medico, c.fecha, c.hora, c.estado, c.dni_personal, c.numero_consultorio"
+                                Filter: (c.fecha >= (CURRENT_DATE - '1 year'::interval))
+                                Rows Removed by Filter: 340
+                                Buffers: shared hit=13
+                          ->  Hash  (cost=24.00..24.00 rows=1000 width=30) (actual time=0.316..0.317 rows=1000 loops=1)
+"                                Output: p.dni, p.nombre, p.apellido, p.tipo_seguro"
+                                Buckets: 1024  Batches: 1  Memory Usage: 69kB
+                                Buffers: shared hit=14
+                                ->  Seq Scan on public.paciente p  (cost=0.00..24.00 rows=1000 width=30) (actual time=0.042..0.165 rows=1000 loops=1)
+"                                      Output: p.dni, p.nombre, p.apellido, p.tipo_seguro"
+                                      Buffers: shared hit=14
+                    ->  Hash  (cost=18.00..18.00 rows=1000 width=25) (actual time=0.336..0.336 rows=1000 loops=1)
+"                          Output: me.nombre_especialidad, me.dni_medico"
+                          Buckets: 1024  Batches: 1  Memory Usage: 65kB
+                          Buffers: shared hit=8
+                          ->  Seq Scan on public.medico_especialidad me  (cost=0.00..18.00 rows=1000 width=25) (actual time=0.008..0.124 rows=1000 loops=1)
+"                                Output: me.nombre_especialidad, me.dni_medico"
+                                Buffers: shared hit=8
+Planning:
+  Buffers: shared hit=97 dirtied=1
+Planning Time: 0.815 ms
+Execution Time: 3.757 ms

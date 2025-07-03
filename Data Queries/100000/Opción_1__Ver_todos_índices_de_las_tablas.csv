@@ -1,0 +1,9 @@
+cita,cita_pk,2208 kB
+cita,cita_uq,4904 kB
+especialidad,especialidad_pk,6936 kB
+especialidad,especialidad_uq_nombre,6936 kB
+medico,medico_pk,4000 kB
+medico,medico_uq_correo,5304 kB
+medico_especialidad,medico_especialidad_pk,6408 kB
+paciente,paciente_pk,4312 kB
+paciente,paciente_uq_correo,5392 kB

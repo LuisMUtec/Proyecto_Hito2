@@ -1,0 +1,6 @@
+Aggregate  (cost=2485.00..2485.01 rows=1 width=8) (actual time=9.738..9.738 rows=1 loops=1)
+  Buffers: shared hit=1235
+  ->  Seq Scan on cita  (cost=0.00..2235.00 rows=100000 width=0) (actual time=0.009..5.459 rows=100000 loops=1)
+        Buffers: shared hit=1235
+Planning Time: 0.547 ms
+Execution Time: 9.757 ms
